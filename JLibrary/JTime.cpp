@@ -91,6 +91,11 @@ JDateTime::JDateTime(void)
     m_time = time;
 }
 
+JDateTime::JDateTime(__int64 time)
+{
+    FileTimeToSystemTime((FILETIME*)&time, &m_time);
+}
+
 JDateTime::JDateTime(wstring time)
 {
     if( time.size() == DataTimeStringLength ){

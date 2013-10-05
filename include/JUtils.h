@@ -13,69 +13,22 @@
 
 #include "JTime.h"
 #include "JString.h"
-#include <string>
-#include <ios>
-using std::wstring;
-using std::string;
 
 #define JDelete(x) if( x ){ delete x; x = NULL; }
 
 class JUtils
 {
 public:
-    static void			WindowsStartUp();
+    static void		WindowsStartUp();
     
-    template<class T> static __int64 ConvertTime(T time)
-    {
-        time = JStringUtils::UpperCase<T>(time);
-        size_t pos = -1;
-        __int64 val = 0;
-        for(size_t i = 0; i < time.size(); i++){
-            if( time[i] == _T('D') || time[i] == _T('H') || time[i] == _T('M') || time[i] == _T('S')){
-                long tmp = _tstoi(time.substr(pos+1, i-pos-1).c_str());
-                if( time[i] == _T('D') ){
-                    val += tmp * JDateTime_Day_Sec;
-                }else if( time[i] == _T('H') ){
-                    val += tmp * JDateTime_Hour_Sec;
-                }else if( time[i] == _T('M') ){
-                    val += tmp * JDateTime_Minute_Sec;
-                }else if( time[i] == _T('S') ){
-                    val += tmp * JDateTime_Sec;
-                }
-            }	
-        }
-        return val;
-    }
-    template<class T> static __int64 ConvertSize(T size)
-    {
-        size = JStringUtils::UpperCase<T>(size);
-        __int64 val = -1;
-        for(size_t i = 0; i < size.size(); i++){
-            if( !isdigit(size[i]) ){
-                val = _tstoi(size.substr(0, i).c_str());
-                switch(size[i]){
-                case _T('G'):	val *= 1024*1024*1024; break;
-                case _T('M'):	val *= 1024*1024; break;
-                case _T('K'):	val *= 1024; break;
-                default:	break;
-                }
-                break;
-            }
-            if( i == size.size()-1 ){
-                val = _tstoi(size.c_str());
-            }
-        }
-        return val;
-    }
+    static __int64  ConvertTime(string time);
+    static __int64  ConvertTime(wstring time);
+    
+    static __int64  ConvertSize(string size);
+    static __int64  ConvertSize(wstring size);
 
-    static wstring		AsciiToUnicodeString(string str);
-    static string		UnicodeToAsciiString(wstring str);
-
-    template <class T> static void swap(T& t1, T& t2){
-        T tmp = t1;
-        t1 = t2;
-        t2 = tmp;
-    }
+    static wstring	AsciiToUnicodeString(string str);
+    static string	UnicodeToAsciiString(wstring str);
 };
 
 typedef struct _LogData{
@@ -93,27 +46,13 @@ public:
 class JNumberUtils
 {
 public:
-    template <class T> static T Approximate(T t, T minValue, T maxValue){
+    template <class T> static T Round(T t, T minValue, T maxValue){
         if( t < minValue ){
             t = minValue;
         }
         if( t > maxValue ){
             t = maxValue;
         }
-        return t;
-    }
-
-    template <class T> T FromWString(wstring str){
-        T t;
-        wistringstream iss(str, wistringstream::in);
-        iss >> t;
-        return t;
-    }
-
-    template <class T> T FromString(string str){
-        T t;
-        istringstream iss(str, istringstream::in);
-        iss >> t;
         return t;
     }
 };

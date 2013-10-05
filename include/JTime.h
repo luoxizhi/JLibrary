@@ -129,6 +129,7 @@ public:
 	JDateTime(SYSTEMTIME& time);
 	JDateTime(COleDateTime& time);
 	JDateTime(FILETIME time);
+    JDateTime(__int64 time);
 	~JDateTime(void);
 
     //%04d/%02d/%02d %02d:%02d:%02d.%03d

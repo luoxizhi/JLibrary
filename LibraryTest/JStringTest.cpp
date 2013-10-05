@@ -138,7 +138,7 @@ bool JStringTest::TestTrimString()
         && JStringUtils::TrimString(str1, wstring(L"a")) == L"bc"
         && JStringUtils::TrimString(str2, string("a")) == "bc"
         && JStringUtils::TrimString(str3, wstring(L"回")) == L"文国文"
-        && JStringUtils::TrimString(str3, wstring(L"文")) == L"国"
+        && JStringUtils::TrimString(str3, wstring(L"文")) == L"回文国文回"
         && JStringUtils::TrimString(str4) == "abc";
 }
 
@@ -151,11 +151,11 @@ bool JStringTest::TestTrimLeft()
 
     return JStringUtils::LeftTrim(str1) == L"abca "
         && JStringUtils::LeftTrim(str1, wstring(L"ab")) == L"ca "
-        && JStringUtils::LeftTrim(str1, wstring(L"ca")) == L" "
+        && JStringUtils::LeftTrim(str1, wstring(L"ca")) == L"abca "
         && JStringUtils::LeftTrim(str2) == "abca "
-        && JStringUtils::LeftTrim(str2, string("b")) == "ca "
-        && JStringUtils::LeftTrim(str3, wstring(L"文")) == L"国文回"
-        && JStringUtils::LeftTrim(str3, wstring(L"国")) == L"文回"
+        && JStringUtils::LeftTrim(str2, string("b")) == "abca "
+        && JStringUtils::LeftTrim(str3, wstring(L"文")) == L"回文国文回"
+        && JStringUtils::LeftTrim(str3, wstring(L"回")) == L"文国文回"
         && JStringUtils::LeftTrim(str4) == "abc\r\n";
 }
 
@@ -168,11 +168,11 @@ bool JStringTest::TestTrimRight()
 
     return JStringUtils::RightTrim(str1) == L" abca"
         && JStringUtils::RightTrim(str1, wstring(L"ca")) == L" ab"
-        && JStringUtils::RightTrim(str1, wstring(L"ab")) == L" "
+        && JStringUtils::RightTrim(str1, wstring(L"ab")) == L" abca"
         && JStringUtils::RightTrim(str2) == " abca"
-        && JStringUtils::RightTrim(str2, string("b")) == " a"
-        && JStringUtils::RightTrim(str3, wstring(L"文")) == L"回文国"
-        && JStringUtils::RightTrim(str3, wstring(L"国")) == L"回文"
+        && JStringUtils::RightTrim(str2, string("a")) == " abc"
+        && JStringUtils::RightTrim(str3, wstring(L"回")) == L"回文国文"
+        && JStringUtils::RightTrim(str3, wstring(L"国")) == L"回文国文回"
         && JStringUtils::RightTrim(str4) == "\rabc";
 }
 

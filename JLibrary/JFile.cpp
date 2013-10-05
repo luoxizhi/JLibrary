@@ -43,7 +43,7 @@ JDateTime JFileUtils::GetFileCreateTime(const wstring fileName)
         FileTimeToLocalFileTime(&faData.ftCreationTime, &local_file_time);
         return JDateTime(local_file_time);
     }
-    return JDateTime();
+    return JDateTime(0);
 }
 
 JDateTime JFileUtils::GetFileModifyTime(const wstring fileName)
@@ -55,7 +55,7 @@ JDateTime JFileUtils::GetFileModifyTime(const wstring fileName)
         FileTimeToLocalFileTime(&faData.ftLastWriteTime, &local_file_time);
         return JDateTime(local_file_time);
     }
-    return JDateTime();
+    return JDateTime(0);
 }
 
 JDateTime JFileUtils::GetFileAccessTime(const wstring fileName)
@@ -67,10 +67,10 @@ JDateTime JFileUtils::GetFileAccessTime(const wstring fileName)
         FileTimeToLocalFileTime(&faData.ftLastAccessTime, &local_file_time);
         return JDateTime(local_file_time);
     }
-    return JDateTime();
+    return JDateTime(0);
 }
 
-long JFileUtils::GetFileSize(const wstring fileName)
+ULONG JFileUtils::GetFileSize(const wstring fileName)
 {
     WIN32_FILE_ATTRIBUTE_DATA faData;
     if( GetFileAttributesExW(fileName.c_str(), GetFileExInfoStandard, &faData) ){
@@ -79,49 +79,38 @@ long JFileUtils::GetFileSize(const wstring fileName)
     return -1;
 }
 
-wstring JFileUtils::SuffixFileName(wstring fileName, wstring suffix)
-{
-    size_t pos = fileName.find_last_of(_T('\\'));
-    if( pos > 0 ){
-        fileName.insert(pos-1, suffix, 0, suffix.size());
-    }else{
-        fileName += suffix;
-    }
-    return fileName;
-}
-
-wstring JFileUtils::ExtractFilePath(const wstring fileName)
+wstring JFileUtils::ExtractFilePath(wstring fileName)
 {
     wstring new_str;
-    int pos1 = static_cast<int>(fileName.find_last_of(_T("\\")));
-    int pos2 = static_cast<int>(fileName.find_last_of(_T("/")));
-    if( pos1 >= 0 && pos2 >=0 ){
+    int pos1 = static_cast<int>(fileName.find_last_of(L"\\"));
+    int pos2 = static_cast<int>(fileName.find_last_of(L"/"));
+    if( pos1 != wstring::npos && pos2 != wstring::npos ){
         if( pos1 > pos2 ){
             new_str = fileName.substr(0, pos1+1);
         }else{
             new_str = fileName.substr(0, pos2+1);
         }
-    }else if( pos1 >= 0 ){
+    }else if( pos1 != wstring::npos ){
         new_str = fileName.substr(0, pos1+1);
-    }else if( pos2 >= 0 ){
+    }else if( pos2 != wstring::npos ){
         new_str = fileName.substr(0, pos2+1);
     }else{
-        new_str = _T("");
+        new_str = L"";
     }
     return new_str;
 }
 
-wstring JFileUtils::ExtractFileDir(const wstring fileName)
+wstring JFileUtils::ExtractFileDir(wstring fileName)
 {
     wstring new_str;
     size_t pos1 = fileName.find_last_of(_T("\\"));
     size_t pos2 = fileName.find_last_of(_T("/"));
 
-    if( pos1 >= 0 && pos2 >= 0 ){
+    if( pos1 != wstring::npos && pos2 != wstring::npos ){
         new_str = pos1 > pos2? fileName.substr(0, pos1) : fileName.substr(0, pos2);
-    }else if( pos1 >= 0 ){
+    }else if( pos1 != wstring::npos ){
         new_str = fileName.substr(0, pos1);
-    }else if( pos2 >= 0 ){
+    }else if( pos2!= wstring::npos ){
         new_str = fileName.substr(0, pos2);
     }else{
         new_str = _T("");
@@ -129,18 +118,18 @@ wstring JFileUtils::ExtractFileDir(const wstring fileName)
     return new_str;
 }
 
-wstring JFileUtils::ExtractFileName(const wstring fileName)
+wstring JFileUtils::ExtractFileName(wstring fileName)
 {
     wstring new_str;
-    int pos1 = static_cast<int>(fileName.find_last_of(_T("\\")));
-    int pos2 = static_cast<int>(fileName.find_last_of(_T("/")));
+    int pos1 = static_cast<int>(fileName.find_last_of(L"\\"));
+    int pos2 = static_cast<int>(fileName.find_last_of(L"/"));
 
-    if( pos1 >= 0 && pos2 >=0 ){
+    if( pos1 != wstring::npos && pos2 != wstring::npos ){
         new_str = pos1 > pos2? fileName.substr(pos1+1, fileName.length()-pos1-1) 
                              : fileName.substr(pos2+1, fileName.length()-pos2-1);
-    }else if( pos1 >= 0 ){
+    }else if( pos1 != wstring::npos ){
         new_str = fileName.substr(pos1+1, fileName.length()-pos1-1);
-    }else if( pos2 >= 0 ){
+    }else if( pos2 != wstring::npos ){
         new_str = fileName.substr(pos2+1, fileName.length()-pos2-1);
     }else{
         new_str = fileName;
@@ -148,18 +137,18 @@ wstring JFileUtils::ExtractFileName(const wstring fileName)
     return new_str;
 }
 
-wstring JFileUtils::ExtractFileNameNoExt(const wstring fileName)
+wstring JFileUtils::ExtractFileNameNoExt(wstring fileName)
 {
     wstring name = ExtractFileName(fileName);
-    size_t pos = name.find_last_of(_T('.'));
+    size_t pos = name.find_last_of(L'.');
 
     return pos != wstring::npos? name.substr(0, pos) : name;
 }
 
-wstring JFileUtils::ExtractFileExt(const wstring fileName)
+wstring JFileUtils::ExtractFileExt(wstring fileName)
 {
-    int pos = static_cast<int>(fileName.find_last_of(_T(".")));
-    return pos >= 0? fileName.substr(pos, fileName.length()-pos) : _T("");
+    int pos = static_cast<int>(fileName.find_last_of(L"."));
+    return pos >= 0? fileName.substr(pos, fileName.length()-pos) : L"";
 }
 
 wstring JFileUtils::ModifyFileName(wstring fileName, wstring newFileName)
@@ -167,7 +156,7 @@ wstring JFileUtils::ModifyFileName(wstring fileName, wstring newFileName)
     wstring path = ExtractFilePath(fileName);
     wstring name = ExtractFileName(fileName);
     wstring ext = ExtractFileExt(fileName);
-    size_t pos = name.find(_T('.'));
+    size_t pos = name.find(L'.');
 
     if( pos != wstring::npos ){
         name = name.substr(0, pos);
@@ -200,15 +189,15 @@ wstring JFileUtils::GetFileVersion(wstring fileName)
         VS_FIXEDFILEINFO *vs_info;
         UINT vs_info_size;
 
-        if (::VerQueryValue(buffer, _T("\\"), (void**)&vs_info, &vs_info_size)){
+        if (::VerQueryValueW(buffer, L"\\", (void**)&vs_info, &vs_info_size)){
             int major  = HIWORD(vs_info->dwFileVersionMS);
             int minor   = LOWORD(vs_info->dwFileVersionMS);
             int release = HIWORD(vs_info->dwFileVersionLS);
             int build   = LOWORD(vs_info->dwFileVersionLS);
             verStr = JStringUtils::ToWString<int>(major) 
-                     + _T(".") + JStringUtils::ToWString<int>(minor) 
-                     + _T(".") + JStringUtils::ToWString<int>(release) 
-                     + _T(".") + JStringUtils::ToWString<int>(build);
+                     + L"." + JStringUtils::ToWString<int>(minor) 
+                     + L"." + JStringUtils::ToWString<int>(release) 
+                     + L"." + JStringUtils::ToWString<int>(build);
         }
     }
 
@@ -216,78 +205,55 @@ wstring JFileUtils::GetFileVersion(wstring fileName)
     return verStr;
 }
 
-void JFileUtils::WriteFile(const wstring fileName, vector<wstring>& fileContent, wstring suffix)
+DWORD JFileUtils::WriteStringFile(const wstring fileName, wstring& fileContent)
 {
     if( IsFileExist(fileName) ){
         ::DeleteFileW(fileName.c_str());
     }
-
     ForceCreateDirectory(ExtractFilePath(fileName));
+
+    DWORD count = 0;
     HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if( file_handle != INVALID_HANDLE_VALUE ){
-        wstring content;
-        for( vector<wstring>::const_iterator it = fileContent.begin(); it != fileContent.end(); ++it ){
-            content += (*it + suffix);
-        }
-        DWORD count;
-        ::WriteFile(file_handle, content.c_str(), (DWORD)(content.size()*sizeof(WCHAR)), &count, NULL);
-        CloseHandle(file_handle);
-    }
-}
-
-void JFileUtils::WriteFile(const wstring fileName, wstring& fileContent)
-{
-    if( IsFileExist(fileName) ){
-        ::DeleteFileW(fileName.c_str());
-    }
-
-    ForceCreateDirectory(ExtractFilePath(fileName));
-    HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    if( file_handle != INVALID_HANDLE_VALUE ){
-        DWORD count;
+        
         ::WriteFile(file_handle, fileContent.c_str(), (DWORD)(fileContent.size()*sizeof(WCHAR)), &count, NULL);
         CloseHandle(file_handle);
     }
+    return count;
 }
 
-void JFileUtils::AppendFile(const wstring fileName, vector<wstring>& fileContent, wstring suffix)
+DWORD JFileUtils::WriteFile(wstring fileName, char* buffer, ULONG length)
 {
+    if( IsFileExist(fileName) ){
+        ::DeleteFileW(fileName.c_str());
+    }
     ForceCreateDirectory(ExtractFilePath(fileName));
 
+    DWORD count = 0;
+    HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if( file_handle != INVALID_HANDLE_VALUE ){        
+        ::WriteFile(file_handle, buffer, (DWORD)length, &count, NULL);
+        CloseHandle(file_handle);
+    }
+    return count;
+}
+
+DWORD JFileUtils::AppendStringFile(const wstring fileName, wstring fileContent, wstring suffix)
+{
+    ForceCreateDirectory(ExtractFilePath(fileName));    
     HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if( file_handle == INVALID_HANDLE_VALUE ){
         file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     }else{
         ::SetFilePointer(file_handle, 0, NULL, FILE_END);
     }
-    if( file_handle >= 0 ){     
-        wstring line;
-        for( vector<wstring>::const_iterator it = fileContent.begin(); it != fileContent.end(); ++it ){
-            DWORD write_count;
-            line = *it + suffix;
-            ::WriteFile(file_handle, line.c_str(), (DWORD)(line.size()*sizeof(WCHAR)), &write_count, NULL);
-        }
-        CloseHandle(file_handle);
-    }
-}
 
-void JFileUtils::AppendFile(const wstring fileName, wstring fileContent, wstring suffix)
-{
-    wstring line;
-    ForceCreateDirectory(ExtractFilePath(fileName));
+    DWORD write_count = 0;
+    wstring line = fileContent + suffix;
+    ::WriteFile(file_handle, line.c_str(), (DWORD)(line.size()*sizeof(WCHAR)), &write_count, NULL);
+    CloseHandle(file_handle);
 
-    HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if( file_handle == INVALID_HANDLE_VALUE ){
-        file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    }else{
-        ::SetFilePointer(file_handle, 0, NULL, FILE_END);
-    }
-    if( file_handle >= 0 ){            
-        DWORD write_count;
-        line = fileContent + suffix;
-        ::WriteFile(file_handle, line.c_str(), (DWORD)(line.size()*sizeof(WCHAR)), &write_count, NULL);
-        CloseHandle(file_handle);
-    }
+    return write_count;
 }
 
 void JFileUtils::AppendFile2File(const wstring fileName, wstring contentFileName)
@@ -322,7 +288,7 @@ void JFileUtils::AppendFile2File(const wstring fileName, wstring contentFileName
     }		
 }
 
-void JFileUtils::AppendData2File(const wstring fileName, char* buffer, long length)
+DWORD JFileUtils::AppendFile(const wstring fileName, char* buffer, ULONG length)
 {
     ForceCreateDirectory(ExtractFilePath(fileName));
     HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -331,9 +297,11 @@ void JFileUtils::AppendData2File(const wstring fileName, char* buffer, long leng
     }else{
         ::SetFilePointer(file_handle, 0, NULL, FILE_END);
     }
-    DWORD real_write;
+
+    DWORD real_write = 0;
     ::WriteFile(file_handle, buffer, length*sizeof(char), &real_write, NULL);
     ::CloseHandle(file_handle);
+    return real_write;
 }
 
 void JFileUtils::CopyFolder2Folder(wstring srcDirName, wstring tarDirName)
@@ -346,7 +314,7 @@ void JFileUtils::CopyFolder2Folder(wstring srcDirName, wstring tarDirName)
 void JFileUtils::CopyFile2Folder(const vector<wstring>& vecFiles, wstring tarDirName)
 {
     if( tarDirName[tarDirName.size()-1] != _T('\\') && tarDirName[tarDirName.size()-1] != _T('/') ){
-        tarDirName += _T("\\");
+        tarDirName += L"\\";
     }
     wstring tarFileName;
     for( vector<wstring>::const_iterator it = vecFiles.begin(); it != vecFiles.end(); ++it ){
@@ -359,8 +327,7 @@ void JFileUtils::CopyFile2Folder(const vector<wstring>& vecFiles, wstring tarDir
 
 void JFileUtils::CopyFile2File(const wstring srcFileName, const wstring tarFileName)
 {
-    if( JStringUtils::TrimString(srcFileName) == _T("") 
-       || JStringUtils::TrimString(tarFileName) == _T("") ){
+    if( JStringUtils::TrimString(srcFileName).empty() || JStringUtils::TrimString(tarFileName).empty() ){
         return;
     }
     if( !IsFileExist(srcFileName) ){
@@ -378,18 +345,17 @@ void JFileUtils::MoveFolder2Folder(wstring srcDirName, wstring tarDirName)
 
 void JFileUtils::MoveFile2Folder(const vector<wstring>& vecFiles, wstring tarDirName)
 {
-    if( JStringUtils::TrimString(tarDirName) == _T("") ){
-        return;
-    }
-    if( tarDirName[tarDirName.size()-1] != _T('\\') && tarDirName[tarDirName.size()-1] != _T('/') ){
-        tarDirName += _T("\\");
-    }
-    wstring tarFileName;
-    for( vector<wstring>::const_iterator it = vecFiles.begin(); it != vecFiles.end(); ++it ){
-        tarFileName = tarDirName + ExtractFileName(*it);
-        if( IsFileExist(tarFileName) == false ){	
-            if( ::CopyFileW(it->c_str(), tarFileName.c_str(), false) ){
-                DelFile(*it);
+    if( !JStringUtils::TrimString(tarDirName).empty() ){
+        if( tarDirName[tarDirName.size()-1] != L'\\' && tarDirName[tarDirName.size()-1] != L'/' ){
+            tarDirName += L"\\";
+        }
+        wstring tarFileName;
+        for( vector<wstring>::const_iterator it = vecFiles.begin(); it != vecFiles.end(); ++it ){
+            tarFileName = tarDirName + ExtractFileName(*it);
+            if( IsFileExist(tarFileName) == false ){	
+                if( ::CopyFileW(it->c_str(), tarFileName.c_str(), false) ){
+                    DelFile(*it);
+                }
             }
         }
     }
@@ -397,13 +363,9 @@ void JFileUtils::MoveFile2Folder(const vector<wstring>& vecFiles, wstring tarDir
 
 void JFileUtils::MoveFile2File(const wstring srcFileName, const wstring tarFileName)
 {
-    if( JStringUtils::TrimString(srcFileName) == _T("") || JStringUtils::TrimString(tarFileName) == _T("") ){
-        return;
+    if( !JStringUtils::TrimString(srcFileName).empty() && !JStringUtils::TrimString(tarFileName).empty() && IsFileExist(srcFileName) ){
+        ::MoveFileW(srcFileName.c_str(), tarFileName.c_str());
     }
-    if( !IsFileExist(srcFileName) ){
-        return;
-    }
-    ::MoveFileW(srcFileName.c_str(), tarFileName.c_str());
 }
 
 /************************************************************************/
@@ -411,95 +373,67 @@ void JFileUtils::MoveFile2File(const wstring srcFileName, const wstring tarFileN
 /************************************************************************/
 void JFileUtils::GetFileNameList(wstring dirName, vector<wstring>& fileList)
 {
-    if( JStringUtils::TrimString(dirName) == _T("") ){
-        return;
-    }
+    if( !JStringUtils::TrimString(dirName).empty() ){
+        if( dirName[dirName.size()-1] != L'\\' && dirName[dirName.size()-1] != L'/' ){
+            dirName += L"\\";
+        }
+        fileList.clear();
 
-    if( dirName[dirName.size()-1] != _T('\\') && dirName[dirName.size()-1] != _T('/') ){
-        dirName += _T("\\");
-    }
-    fileList.clear();
-
-    WIN32_FIND_DATAW sr;
-    HANDLE handle = ::FindFirstFileW((dirName+_T("*")).c_str(), &sr);
-    if( handle != INVALID_HANDLE_VALUE ){
-        wstring fileName;
-        do{
-            fileName = sr.cFileName;
-            if( !(sr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ){
-                fileList.push_back(dirName + sr.cFileName);
-            }
-        }while(FindNextFileW(handle, &sr));
-        ::FindClose(handle);
-    }
-}
-
-void JFileUtils::GetFileNameList(wstring dirName, vector<wstring>& fileList, wstring keyword)
-{
-    if( JStringUtils::TrimString(dirName) == _T("") ){
-        return;
-    }
-    if( dirName[dirName.size()-1] != _T('\\') && dirName[dirName.size()-1] != _T('/') ){
-        dirName += _T("\\");
-    }
-    fileList.clear();
-    WIN32_FIND_DATAW sr;
-    HANDLE handle = ::FindFirstFileW(( (dirName+_T("*")).c_str()), &sr);
-    if( handle != INVALID_HANDLE_VALUE ){
-        wstring fileName;
-        do{
-            fileName = sr.cFileName;
-            if( !(sr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ){
-                if( HasKeyWord(sr.cFileName, keyword) ){
+        WIN32_FIND_DATAW sr;
+        HANDLE handle = ::FindFirstFileW((dirName+L"*").c_str(), &sr);
+        if( handle != INVALID_HANDLE_VALUE ){
+            wstring fileName;
+            do{
+                fileName = sr.cFileName;
+                if( !(sr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ){
                     fileList.push_back(dirName + sr.cFileName);
-                }					
-            }
-        }while(FindNextFileW(handle, &sr));
-        ::FindClose(handle);
+                }
+            }while(FindNextFileW(handle, &sr));
+            ::FindClose(handle);
+        }
     }
 }
 
 void JFileUtils::GetFileNameList(wstring dirName, list<wstring>& fileList, bool bSubDir)
 {
-    if( JStringUtils::TrimString(dirName) == _T("") )
-        return;
+    if( !JStringUtils::TrimString(dirName).empty() ){
+        if( dirName[dirName.size()-1] != L'\\' && dirName[dirName.size()-1] != L'/' ){
+            dirName += L"\\";
+        }
 
-    if( dirName[dirName.size()-1] != _T('\\') && dirName[dirName.size()-1] != _T('/') ){
-        dirName += _T("\\");
-    }
-
-    WIN32_FIND_DATAW sr;
-    HANDLE handle = ::FindFirstFileW((dirName+_T("*")).c_str(), &sr);
-    if( handle != INVALID_HANDLE_VALUE ){
-        wstring fileName;
-        do{
-            fileName = sr.cFileName;
-            if( !(sr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ){
-                fileList.push_back(dirName + sr.cFileName);
-            }else{
-                if( bSubDir && wstring(sr.cFileName) != _T(".") && wstring(sr.cFileName) != _T("..") )
-                    GetFileNameList(dirName+sr.cFileName, fileList, true);
-            }
-        }while(FindNextFileW(handle, &sr));
-        ::FindClose(handle);
+        WIN32_FIND_DATAW sr;
+        HANDLE handle = ::FindFirstFileW((dirName+L"*").c_str(), &sr);
+        if( handle != INVALID_HANDLE_VALUE ){
+            wstring fileName;
+            do{
+                fileName = sr.cFileName;
+                if( !(sr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ){
+                    fileList.push_back(dirName + sr.cFileName);
+                }else{
+                    if( bSubDir && wstring(sr.cFileName) != L"." && wstring(sr.cFileName) != L".." )
+                        GetFileNameList(dirName+sr.cFileName, fileList, true);
+                }
+            }while(FindNextFileW(handle, &sr));
+            ::FindClose(handle);
+        }
     }
 }
 
 void JFileUtils::GetDirNameList(wstring dirName, vector<wstring>& dirList)
 {
     dirList.clear();
-    if( !dirName.empty() && dirName[dirName.size()-1] != _T('\\') && dirName[dirName.size()-1] != _T('/') ){
-        dirName += _T("\\");
+    if( !dirName.empty() && dirName[dirName.size()-1] != L'\\' && dirName[dirName.size()-1] != L'/' ){
+        dirName += L"\\";
     }
     WIN32_FIND_DATAW sr;
-    HANDLE handle = ::FindFirstFileW((dirName+_T("*")).c_str(), &sr);
+    HANDLE handle = ::FindFirstFileW((dirName+L"*").c_str(), &sr);
     if( handle != INVALID_HANDLE_VALUE )
     {
         wstring fileName;
         do
         {
             fileName = sr.cFileName;
-            if( (sr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && fileName != _T(".") && fileName != _T("..") ){
+            if( (sr.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) && fileName != L"." && fileName != L".." ){
                 dirList.push_back(dirName + sr.cFileName);
             }
         }while(FindNextFileW(handle, &sr));
@@ -532,6 +466,7 @@ void JFileUtils::DelOutDateFile(wstring dirName, __int64 seconds, bool bSubDir)
 bool CompareFileModifyTimeAsc(wstring file1, wstring file2){
     return JFileUtils::GetFileModifyTime(file1) > JFileUtils::GetFileModifyTime(file2);
 }
+
 void JFileUtils::DelOutSizeFile(wstring dirName, __int64 totalSize, bool bSubDir /* = true */)
 {
     if( totalSize == -1 ){
@@ -574,17 +509,52 @@ void JFileUtils::DelFile(const wstring fileName)
     ::DeleteFileW(fileName.c_str());
 }
 
-bool JFileUtils::HasKeyWord(const wstring content, const wstring keyword)
-{
-    return content.find(keyword, 0) != wstring::npos;
-}
-
 wstring JFileUtils::MakeDirNameValid(wstring& dirName)
 {
     set<wstring> invalidSet;
-    WCHAR* invalidChr[] = { _T("\\"), _T("/"), _T(":"), _T("*"), _T("?"), _T("\""), _T("<"), _T(">"), _T("|") };
+    WCHAR* invalidChr[] = { L"\\", L"/", L":", L"*", L"?", L"\"", L"<", L">", L"|" };
     for( int i = 0; i < sizeof(invalidChr)/sizeof(invalidChr[0]); i++){
         invalidSet.insert(wstring(invalidChr[i]));
     }
-    return JStringUtils::StringReplaceAll<wstring>(dirName, invalidSet, _T(""));
+    return JStringUtils::StringReplaceAll<wstring>(dirName, invalidSet, L"");
+}
+
+char* JFileUtils::ReadStringFile(wstring fileName)
+{
+    if( IsFileExist(fileName) ){
+        ULONG size = GetFileSize(fileName);
+        HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if( file_handle != INVALID_HANDLE_VALUE ){
+            char* buffer = NULL;
+            DWORD bytes_read;
+            buffer = new char[size+2];
+            if( buffer ){
+                ::ReadFile(file_handle, buffer, size, &bytes_read, NULL);
+                buffer[size] = '\0';
+                buffer[size+1] = '\0';
+            }
+            CloseHandle(file_handle);
+            return buffer;
+        }
+    }
+    return NULL;    
+}
+
+char* JFileUtils::ReadFile(wstring fileName)
+{
+    if( IsFileExist(fileName) ){
+        ULONG size = GetFileSize(fileName);
+        HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if( file_handle != INVALID_HANDLE_VALUE ){
+            char* buffer = NULL;
+            DWORD bytes_read;
+            buffer = new char[size];
+            if( buffer ){
+                ::ReadFile(file_handle, buffer, size, &bytes_read, NULL);
+            }
+            CloseHandle(file_handle);
+            return buffer;
+        }
+    }
+    return NULL;    
 }

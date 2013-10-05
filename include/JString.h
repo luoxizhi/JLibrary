@@ -63,26 +63,7 @@ public:
 
     template<class T> static T TrimString(T str, T pattern = T())
     {
-        if( !str.empty() ){
-            T::iterator it;
-            for( it = str.begin(); it != str.end(); ++it ){
-                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t')) ){
-                    break;
-                }
-            }
-            str.erase(str.begin(), it);
-        }
-        if( !str.empty() ){
-            T::reverse_iterator it;
-            for( it = str.rbegin(); it != str.rend(); ++it ){
-                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t')) ){
-                    break;
-                }
-            }
-            T::difference_type dt = str.rend() - it;
-            str.erase( str.begin() + dt, str.end() );
-        }
-        return pattern.empty()? str : StringCutRight(StringCutLeft(str, pattern), pattern);
+        return LeftTrim(RightTrim(str, pattern), pattern);
     }
 
     template<class T> static T LeftTrim(T str, T pattern = T())
@@ -96,7 +77,15 @@ public:
             }
             str.erase(str.begin(), it);
         }
-        return pattern.empty()? str : StringCutLeft(str, pattern);
+
+        size_t len = pattern.size();
+        while(len && str.size() >= len){
+            if(str.substr(0, len) == pattern)
+                str = str.substr(len);
+            else
+                break;
+        }
+        return str;
     }
 
     template<class T> static T RightTrim(T str, T pattern = T())
@@ -111,7 +100,15 @@ public:
             T::difference_type dt = str.rend() - it;
             str.erase( str.begin() + dt, str.end() );
         }
-        return pattern.empty()? str : StringCutRight(str, pattern);
+
+        size_t len = pattern.size();
+        while(len && str.size() >= len){
+            if(str.substr(str.size()-len) == pattern)
+                str = str.substr(0, str.size()-len);
+            else
+                break;
+        }
+        return str;
     }
 
     template<class T> static unsigned int StringSplit(const T str, const T tag, vector<T>& vecStr, bool bTrim = true)

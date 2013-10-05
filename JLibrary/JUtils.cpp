@@ -7,15 +7,11 @@
 //
 //-------------------------------------------------------------------------
 #include "stdafx.h"
-
 #include "JUtils.h"
+
 #include "JFile.h"
 #include "ctype.h"
-#include <algorithm>
-#include "Winver.h"
-
-#include <regex>
-
+#include "windows.h"
 
 wstring	JUtils::AsciiToUnicodeString(string str)
 {
@@ -51,7 +47,7 @@ string JUtils::UnicodeToAsciiString(wstring str)
 void JUtils::WindowsStartUp()
 {
 	HKEY hKey; 
-	LPCWSTR lpRun = _T("Software//Microsoft//Windows//CurrentVersion//Run"); 
+	LPCWSTR lpRun = L"Software//Microsoft//Windows//CurrentVersion//Run"; 
 	long lRet = RegOpenKeyExW(HKEY_LOCAL_MACHINE, lpRun, 0, KEY_WRITE, &hKey); 
 	if(lRet == ERROR_SUCCESS) 
 	{ 
@@ -60,6 +56,60 @@ void JUtils::WindowsStartUp()
 		lRet = RegSetValueExW(hKey, JFileUtils::ExtractFileNameNoExt(fileName).c_str(), 0, REG_SZ, (BYTE*)fileName.c_str(), (DWORD)fileName.length());
 		RegCloseKey(hKey); 
 	}
+}
+
+__int64 JUtils::ConvertTime(string time)
+{
+    time = JStringUtils::UpperCase(time);
+    size_t pos = -1;
+    __int64 val = 0;
+    for(size_t i = 0; i < time.size(); i++){
+        if( time[i] == 'D' || time[i] == 'H' || time[i] == 'M' || time[i] == 'S'){
+            long tmp = atol(time.substr(pos+1, i-pos-1).c_str());
+            if( time[i] == 'D' ){
+                val += tmp * JDateTime_Day_Sec;
+            }else if( time[i] == 'H' ){
+                val += tmp * JDateTime_Hour_Sec;
+            }else if( time[i] == 'M' ){
+                val += tmp * JDateTime_Minute_Sec;
+            }else if( time[i] == 'S' ){
+                val += tmp * JDateTime_Sec;
+            }
+        }	
+    }
+    return val;
+}
+
+__int64 JUtils::ConvertTime(wstring time)
+{
+    return ConvertTime(UnicodeToAsciiString(time));
+}
+
+__int64 JUtils::ConvertSize(string size)
+{
+    size = JStringUtils::UpperCase(size);
+    __int64 val = -1;
+    for(size_t i = 0; i < size.size(); i++){
+        if( !isdigit(size[i]) ){
+            val = atol(size.substr(0, i).c_str());
+            switch(size[i]){
+            case 'G':	val *= 1024*1024*1024; break;
+            case 'M':	val *= 1024*1024; break;
+            case 'K':	val *= 1024; break;
+            default:	break;
+            }
+            break;
+        }
+        if( i == size.size()-1 ){
+            val = atol(size.c_str());
+        }
+    }
+    return val;
+}
+
+__int64 JUtils::ConvertSize(wstring size)
+{
+    return ConvertSize(UnicodeToAsciiString(size));
 }
 
 bool JLogUtils::String2LogData(wstring strLine, LogData& data)
