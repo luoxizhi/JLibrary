@@ -29,30 +29,60 @@ public:
         m_second = time.m_second; 
         m_milisecond = time.m_milisecond; 
     }
+    //%02d:%02d:%02d.%03d
 	JTime(wstring time);
     JTime(string time);
 	~JTime(){}
 
-	JTime& operator = (const JTime& rightVlule){
-		m_hour = rightVlule.m_hour; 
-        m_minute = rightVlule.m_minute; 
-        m_second = rightVlule.m_second; 
-        m_milisecond = rightVlule.m_milisecond;
+	JTime& operator = (const JTime& rightValue){
+		m_hour = rightValue.m_hour; 
+        m_minute = rightValue.m_minute; 
+        m_second = rightValue.m_second; 
+        m_milisecond = rightValue.m_milisecond;
 		return *this;
 	}
+
+    bool operator == (const JTime& rightValue){
+        return m_hour == rightValue.m_hour && m_minute == rightValue.m_minute
+            && m_second == rightValue.m_second && m_milisecond == rightValue.m_milisecond;
+    }
+
+    bool operator != (const JTime& rightValue){
+        return !(m_hour == rightValue.m_hour && m_minute == rightValue.m_minute
+               && m_second == rightValue.m_second && m_milisecond == rightValue.m_milisecond);
+    }
+
 	bool operator > (const JTime& rightValue){
 		__int64 v1 = m_hour*JDateTime_Hour_Sec + m_minute*JDateTime_Minute_Sec + m_second*JDateTime_Sec + m_milisecond;
 		__int64 v2 = rightValue.m_hour*JDateTime_Hour_Sec + rightValue.m_minute*JDateTime_Minute_Sec 
                      + rightValue.m_second*JDateTime_Sec + rightValue.m_milisecond;
 		return v1 > v2;
 	}
+
+    bool operator >= (const JTime& rightValue){
+        __int64 v1 = m_hour*JDateTime_Hour_Sec + m_minute*JDateTime_Minute_Sec + m_second*JDateTime_Sec + m_milisecond;
+        __int64 v2 = rightValue.m_hour*JDateTime_Hour_Sec + rightValue.m_minute*JDateTime_Minute_Sec 
+            + rightValue.m_second*JDateTime_Sec + rightValue.m_milisecond;
+        return v1 >= v2;
+    }
+
 	bool operator < (const JTime& rightValue){
 		__int64 v1 = m_hour*JDateTime_Hour_Sec + m_minute*JDateTime_Minute_Sec + m_second*JDateTime_Sec + m_milisecond;
 		__int64 v2 = rightValue.m_hour*JDateTime_Hour_Sec + rightValue.m_minute*JDateTime_Minute_Sec 
                      + rightValue.m_second*JDateTime_Sec + rightValue.m_milisecond;
 		return v1 < v2;
 	}
+
+    bool operator <= (const JTime& rightValue){
+        __int64 v1 = m_hour*JDateTime_Hour_Sec + m_minute*JDateTime_Minute_Sec + m_second*JDateTime_Sec + m_milisecond;
+        __int64 v2 = rightValue.m_hour*JDateTime_Hour_Sec + rightValue.m_minute*JDateTime_Minute_Sec 
+            + rightValue.m_second*JDateTime_Sec + rightValue.m_milisecond;
+        return v1 <= v2;
+    }
+
+    //%02d:%02d:%02d.%03d
 	wstring ToWString();
+    //%04d%02d%02d%02d%02d%02d
     string  ToString();
 
 public:
@@ -116,6 +146,7 @@ public:
 	bool		operator >  (const JDateTime& rightValue);
 	bool		operator >= (const JDateTime& rightValue);
 	bool		operator <  (const JDateTime& rightValue);
+    bool        operator <= (const JDateTime& rightValue);
 	bool		operator == (const JDateTime& rightValue);
 	bool		operator != (const JDateTime& rightValue);
 	JDateTime&	operator =  (const JDateTime& rightValue);

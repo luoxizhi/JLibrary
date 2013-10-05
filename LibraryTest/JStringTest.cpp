@@ -9,7 +9,6 @@
 #include "stdafx.h"
 #include "JStringTest.h"
 #include "JString.h"
-#include "windows.h"
 #include <iostream>
 using std::wcout;
 using std::cout;
@@ -35,6 +34,9 @@ bool JStringTest::RunFunction(bool result, string strFunc)
 
 bool JStringTest::NormalTest()
 {
+    cout << "---------------------------------------\n";
+    cout << "     File JString.h starting...\n";
+    
     bool all_pass = RunFunction(TestStringCutLeft_Size(), "JStringUtils::StringCutLeft_Size") 
                  && RunFunction(TestStringCutLeft_String(), "JStringUtils::StringCutLeft_String")
                  && RunFunction(TestStringCutRight_Size(), "JStringUtils::StringCutRight_Size")
@@ -53,10 +55,8 @@ bool JStringTest::NormalTest()
                  && RunFunction(TestStringReverse(), "JStringUtils::StringReverse")
                  && RunFunction(TestToString(), "JStringUtils::ToString")
                  && RunFunction(TestToWString(), "JStringUtils::ToWString");
+    cout << "     File JString.h " << (all_pass? "PASS" : "FAILED") << "\n";
     cout << "---------------------------------------\n";
-    cout << "     File JString.h " << (all_pass? "pass" : "failed") << "\n";
-    cout << "---------------------------------------\n";
-    Sleep(1000);
     return all_pass;
 }
 

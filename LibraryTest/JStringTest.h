@@ -20,6 +20,8 @@ public:
     static bool NormalTest();
 
 private:
+    static bool RunFunction(bool result, string strFunc);
+
     static bool TestStringCutLeft_Size();
     static bool TestStringCutLeft_String();
     static bool TestStringCutRight_Size();
@@ -40,8 +42,6 @@ private:
     static bool TestToWString();
     static bool TestToWStringHex();
     static bool TestToStringHex();
-
-    static bool RunFunction(bool result, string strFunc);
 };
 
 #endif

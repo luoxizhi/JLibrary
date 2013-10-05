@@ -21,15 +21,16 @@ using std::set;
 JTime::JTime(wstring time)
 {
     set<wstring> tags;
-    tags.insert(_T(":"));
-    tags.insert(_T("."));
+    tags.insert(L":");
+    tags.insert(L".");
     vector<wstring> vecStr;
     JStringUtils::StringSplit(time, tags, vecStr);
-    if( time.find(_T('.')) == wstring::npos ){
+    if( time.find(L'.') == wstring::npos ){
         if( vecStr.size() == 3 ){
             m_hour = _wtoi(vecStr[0].c_str());
             m_minute = _wtoi(vecStr[1].c_str());
             m_second = _wtoi(vecStr[2].c_str());
+            m_milisecond = 0;
         }
     }else{
         if( vecStr.size() == 4 ){
@@ -53,6 +54,7 @@ JTime::JTime(string time)
             m_hour = atoi(vecStr[0].c_str());
             m_minute = atoi(vecStr[1].c_str());
             m_second = atoi(vecStr[2].c_str());
+            m_milisecond = 0;
         }
     }else{
         if( vecStr.size() == 4 ){
@@ -74,7 +76,7 @@ string JTime::ToString()
 wstring JTime::ToWString()
 {
     WCHAR dt[128] = {0};
-    swprintf_s(dt, 127, _T("%02d:%02d:%02d.%03d"), m_hour, m_minute, m_second, m_milisecond);
+    swprintf_s(dt, 127, L"%02d:%02d:%02d.%03d", m_hour, m_minute, m_second, m_milisecond);
     return wstring(dt);
 }
 
@@ -91,32 +93,28 @@ JDateTime::JDateTime(void)
 
 JDateTime::JDateTime(wstring time)
 {
-    if( time.size() != DataTimeStringLength ){
-        return;
+    if( time.size() == DataTimeStringLength ){
+        m_time.wYear            = _wtoi(time.substr(0, 4).c_str());
+        m_time.wMonth           = _wtoi(time.substr(5, 2).c_str());
+        m_time.wDay             = _wtoi(time.substr(8, 2).c_str());
+        m_time.wHour            = _wtoi(time.substr(11, 2).c_str());
+        m_time.wMinute          = _wtoi(time.substr(14, 2).c_str());
+        m_time.wSecond          = _wtoi(time.substr(17, 2).c_str());
+        m_time.wMilliseconds    = time.find(L'.') != wstring::npos? _wtoi(time.substr(20).c_str()) : 0;
     }
-
-    m_time.wYear            = _wtoi(time.substr(0, 4).c_str());
-    m_time.wMonth           = _wtoi(time.substr(5, 2).c_str());
-    m_time.wDay             = _wtoi(time.substr(8, 2).c_str());
-    m_time.wHour            = _wtoi(time.substr(11, 2).c_str());
-    m_time.wMinute          = _wtoi(time.substr(14, 2).c_str());
-    m_time.wSecond          = _wtoi(time.substr(17, 2).c_str());
-    m_time.wMilliseconds    = _wtoi(time.substr(20).c_str());
 }
 
 JDateTime::JDateTime(string time)
 {
-    if( time.size() != DataTimeStringLength ){
-        return;
+    if( time.size() == DataTimeStringLength ){
+        m_time.wYear            = atoi(time.substr(0, 4).c_str());
+        m_time.wMonth           = atoi(time.substr(5, 2).c_str());
+        m_time.wDay             = atoi(time.substr(8, 2).c_str());
+        m_time.wHour            = atoi(time.substr(11, 2).c_str());
+        m_time.wMinute          = atoi(time.substr(14, 2).c_str());
+        m_time.wSecond          = atoi(time.substr(17, 2).c_str());
+        m_time.wMilliseconds    = time.find('.') != wstring::npos? atoi(time.substr(20).c_str()) : 0;
     }
-
-    m_time.wYear            = atoi(time.substr(0, 4).c_str());
-    m_time.wMonth           = atoi(time.substr(5, 2).c_str());
-    m_time.wDay             = atoi(time.substr(8, 2).c_str());
-    m_time.wHour            = atoi(time.substr(11, 2).c_str());
-    m_time.wMinute          = atoi(time.substr(14, 2).c_str());
-    m_time.wSecond          = atoi(time.substr(17, 2).c_str());
-    m_time.wMilliseconds    = atoi(time.substr(20).c_str());
 }
 
 JDateTime::JDateTime(SYSTEMTIME& time)
@@ -155,9 +153,9 @@ void JDateTime::SetMinute(unsigned int minute)	{ m_time.wMinute = minute; }
 void JDateTime::SetSecond(unsigned int second)	{ m_time.wSecond = second; }
 void JDateTime::SetMSec(unsigned int milisecond){ m_time.wMilliseconds = milisecond; }
 void JDateTime::SetTime(JTime time)				{ m_time.wHour = time.m_hour;
-m_time.wMinute = time.m_minute;
-m_time.wSecond = time.m_second; 
-m_time.wMilliseconds = time.m_milisecond; }
+                                                  m_time.wMinute = time.m_minute;
+                                                  m_time.wSecond = time.m_second; 
+                                                  m_time.wMilliseconds = time.m_milisecond; }
 // property end
 
 LONGLONG JDateTime::operator - (const JDateTime &rightValue)
@@ -166,7 +164,7 @@ LONGLONG JDateTime::operator - (const JDateTime &rightValue)
         - CTime(rightValue.m_time.wYear, rightValue.m_time.wMonth, rightValue.m_time.wDay, rightValue.m_time.wHour, rightValue.m_time.wMinute, rightValue.m_time.wSecond);
     __int64 nseconds = span.GetTotalSeconds();
     __int64 nMillSeconds = m_time.wMilliseconds - rightValue.m_time.wMilliseconds;
-    return nseconds*1000 + nMillSeconds;
+    return nseconds*JDateTime_Sec + nMillSeconds;
 }
 
 bool JDateTime::operator > (const JDateTime& rightValue)
@@ -219,6 +217,18 @@ bool JDateTime::operator < (const JDateTime& rightValue)
     }
 }
 
+bool JDateTime::operator<= (const JDateTime& rightValue)
+{
+    CTimeSpan span = CTime(m_time.wYear, m_time.wMonth, m_time.wDay, m_time.wHour, m_time.wMinute, m_time.wSecond) 
+        - CTime(rightValue.m_time.wYear, rightValue.m_time.wMonth, rightValue.m_time.wDay, rightValue.m_time.wHour, rightValue.m_time.wMinute, rightValue.m_time.wSecond);
+    __int64 nseconds = span.GetTotalSeconds();
+    if( nseconds != 0 ){
+        return nseconds <= 0;
+    }else{
+        return (m_time.wMilliseconds - rightValue.m_time.wMilliseconds) <= 0;
+    }
+}
+
 JDateTime& JDateTime::operator = (const JDateTime& rightValue)
 {
     m_time = rightValue.m_time;
@@ -245,29 +255,29 @@ JDateTime& JDateTime::operator =(const FILETIME &rightValue)
 
 string JDateTime::ToString(void)
 {	
-    char dt[128] = {0};
-    sprintf_s(dt, 127, "%04d/%02d/%02d %02d:%02d:%02d.%03d", m_time.wYear, m_time.wMonth, m_time.wDay, m_time.wHour, m_time.wMinute, m_time.wSecond, m_time.wMilliseconds);
+    char dt[MAX_PATH+1] = {0};
+    sprintf_s(dt, MAX_PATH, "%04d/%02d/%02d %02d:%02d:%02d.%03d", m_time.wYear, m_time.wMonth, m_time.wDay, m_time.wHour, m_time.wMinute, m_time.wSecond, m_time.wMilliseconds);
     return string(dt);
 }
 
 string JDateTime::ToNumberString()
 {
-    char dt[128] = {0};
-    sprintf_s(dt, 127, "%04d%02d%02d%02d%02d%02d", m_time.wYear, m_time.wMonth, m_time.wDay, m_time.wHour, m_time.wMinute, m_time.wSecond);
+    char dt[MAX_PATH+1] = {0};
+    sprintf_s(dt, MAX_PATH, "%04d%02d%02d%02d%02d%02d", m_time.wYear, m_time.wMonth, m_time.wDay, m_time.wHour, m_time.wMinute, m_time.wSecond);
     return string(dt);
 }
 
 wstring JDateTime::ToWString(void)
 {	
-    WCHAR dt[128] = {0};
-    swprintf_s(dt, 127, _T("%04d/%02d/%02d %02d:%02d:%02d.%03d"), m_time.wYear, m_time.wMonth, m_time.wDay, m_time.wHour, m_time.wMinute, m_time.wSecond, m_time.wMilliseconds);
+    WCHAR dt[MAX_PATH+1] = {0};
+    swprintf_s(dt, MAX_PATH, L"%04d/%02d/%02d %02d:%02d:%02d.%03d", m_time.wYear, m_time.wMonth, m_time.wDay, m_time.wHour, m_time.wMinute, m_time.wSecond, m_time.wMilliseconds);
     return wstring(dt);
 }
 
 wstring JDateTime::ToNumberWString()
 {
     WCHAR dt[128] = {0};
-    swprintf_s(dt, 127, _T("%04d%02d%02d%02d%02d%02d"), m_time.wYear, m_time.wMonth, m_time.wDay, m_time.wHour, m_time.wMinute, m_time.wSecond);
+    swprintf_s(dt, 127, L"%04d%02d%02d%02d%02d%02d", m_time.wYear, m_time.wMonth, m_time.wDay, m_time.wHour, m_time.wMinute, m_time.wSecond);
     return wstring(dt);
 }
 
