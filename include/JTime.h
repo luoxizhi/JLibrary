@@ -101,8 +101,10 @@ public:
 	JDateTime(FILETIME time);
 	~JDateTime(void);
 
-	string  ToString(void);
+    //%04d/%02d/%02d %02d:%02d:%02d.%03d
+	string  ToString(void); 
     wstring ToWString(void);
+    //%04d%02d%02d%02d%02d%02d
 	string  ToNumberString(void);
     wstring ToNumberWString(void);
 	enum { DataTimeStringLength = 23 };

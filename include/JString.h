@@ -17,6 +17,7 @@
 #include <sstream>
 #include <algorithm>
 #include <string>
+#include <locale>
 
 using std::wostringstream;
 using std::ostringstream;
@@ -30,27 +31,90 @@ class JStringUtils
 public:
     template<class T> static T StringCutLeft(const T str, size_t len)
     {
-        return str.size() > len? str.substr(len) : str;
+        return str.size() > len? str.substr(len) : T();
     }
 
     template<class T> static T StringCutLeft(const T str, T pattern)
     {
-        size_t pos = str.find(pattern);
-        return pos != T::npos? str.substr(0, pos) : str;
+        if( str.size() >= pattern.size()){
+            size_t pos = str.find(pattern);
+            if( pos != T::npos ){
+                return str.substr(pos+pattern.size());
+            }
+        }
+        return str;
     }
 
     template<class T> static T StringCutRight(const T str, size_t len)
     {
-        return str.size() > len? str.substr(0, str.size()-len) : str;
+        return str.size() > len? str.substr(0, str.size()-len) : T();
     }
 
     template<class T> static T StringCutRight(const T str, T pattern)
     {
-        size_t pos = str.rfind(pattern);
-        return pos != T::npos? str.substr(pos+1) : str;
+        if( str.size() >= pattern.size() ){
+            size_t pos = str.rfind(pattern);
+            if( pos != T::npos ){
+                return str.substr(0, pos);
+            }
+        }
+        return str;
     }
 
-    template<class T> static void StringSplit(const T str, const T tag, vector<T>& vecStr, bool bTrim = true)
+    template<class T> static T TrimString(T str, T pattern = T())
+    {
+        if( !str.empty() ){
+            T::iterator it;
+            for( it = str.begin(); it != str.end(); ++it ){
+                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t')) ){
+                    break;
+                }
+            }
+            str.erase(str.begin(), it);
+        }
+        if( !str.empty() ){
+            T::reverse_iterator it;
+            for( it = str.rbegin(); it != str.rend(); ++it ){
+                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t')) ){
+                    break;
+                }
+            }
+            T::difference_type dt = str.rend() - it;
+            str.erase( str.begin() + dt, str.end() );
+        }
+        return pattern.empty()? str : StringCutRight(StringCutLeft(str, pattern), pattern);
+    }
+
+    template<class T> static T LeftTrim(T str, T pattern = T())
+    {
+        if( !str.empty() ){
+            T::iterator it;
+            for( it = str.begin(); it != str.end(); ++it ){
+                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t')) ){
+                    break;
+                }
+            }
+            str.erase(str.begin(), it);
+        }
+        return pattern.empty()? str : StringCutLeft(str, pattern);
+    }
+
+    template<class T> static T RightTrim(T str, T pattern = T())
+    {
+        if( !str.empty() ){
+            T::reverse_iterator it;
+            for( it = str.rbegin(); it != str.rend(); ++it ){
+                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t')) ){
+                    break;
+                }
+            }
+            T::difference_type dt = str.rend() - it;
+            str.erase( str.begin() + dt, str.end() );
+        }
+        return pattern.empty()? str : StringCutRight(str, pattern);
+    }
+
+    template<class T> static unsigned int StringSplit(const T str, const T tag, vector<T>& vecStr, bool bTrim = true)
     {
         vecStr.clear();
         size_t index, search_index = 0;
@@ -62,38 +126,10 @@ public:
             if( bTrim ){
                 sub_str = TrimString(sub_str);
             }
-            if( sub_str != _T("") ){
-                vecStr.push_back(sub_str);
-            }			
-            search_index = index + 1;
-        }
-
-        sub_str = str.substr(search_index);
-        if( bTrim ){
-            sub_str = TrimString(sub_str);
-        }
-
-        if( sub_str != _T("") ){
-            vecStr.push_back(sub_str);
-        }		
-    }
-
-    template<class T> static void StringSplit(const T str, const set<T>& tags, vector<T>& vecStr, bool bTrim = true)
-    {
-        vecStr.clear();
-        size_t index, search_index = 0;
-        T sub_str;
-
-        while( (index = StringFind(str, search_index, tags)) != T::npos )
-        {
-            sub_str = str.substr(search_index, index-search_index);
-            if( bTrim ){
-                sub_str = TrimString(sub_str);
-            }
             if( !sub_str.empty() ){
                 vecStr.push_back(sub_str);
             }			
-            search_index = index + 1;
+            search_index = index + tag.size();
         }
 
         sub_str = str.substr(search_index);
@@ -104,91 +140,52 @@ public:
         if( !sub_str.empty() ){
             vecStr.push_back(sub_str);
         }
+
+        return vecStr.size();
     }
 
-    template<class T> static size_t	StringFind(const T str, size_t index, const set<T>& tags)
+    template<class T> static size_t	StringFind(const T str, size_t index, const set<T>& tags, T& tag)
     {
+        size_t pos_front = T::npos;
         for (set<T>::const_iterator it = tags.begin(); it != tags.end(); ++it){
             size_t pos = str.find(*it, index);
-            if( pos != T::npos ){
-                return pos;
+            if( pos != T::npos && (pos_front == T::npos || pos < pos_front)){
+                pos_front = pos;
+                tag = *it;
             }
         }
-        return T::npos;
+        return pos_front;
     }
 
-    template<class T> static T StringLengthFixed(T str, size_t fixedLength, TCHAR strFill =_T(' '), bool bAlignRight = false)
+    template<class T> static unsigned int StringSplit(const T str, const set<T>& tags, vector<T>& vecStr, bool bTrim = true)
     {
-        if( str.size() == fixedLength ){
-            return str;
-        }
-        if( str.size() > fixedLength ){
-            if( bAlignRight ){
-                str = str.substr(str.size()-fixedLength);
-            }else{
-                str = str.substr(0, fixedLength);
-            }
-        }else{
-            if( bAlignRight ){
-                str.insert(0, str.size()-fixedLength, strFill);
-            }else{
-                str += T(str.size()-fixedLength, strFill);
-            }
-        }
-        return str;
-    }
+        vecStr.clear();
+        size_t index, search_index = 0;
+        T sub_str;
+        T tag;
 
-    template<class T> static T TrimString(T str, TCHAR pattern = _T(' '))
-    {
-        if( !str.empty() ){
-            T::iterator it;
-            for( it = str.begin(); it != str.end(); ++it ){
-                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t') || *it == pattern) ){
-                    break;
-                }
+        while( (index = StringFind(str, search_index, tags, tag)) != T::npos )
+        {
+            sub_str = str.substr(search_index, index-search_index);
+            if( bTrim ){
+                sub_str = TrimString(sub_str);
             }
-            str.erase(str.begin(), it);
+            if( !sub_str.empty() ){
+                vecStr.push_back(sub_str);
+            }			
+            search_index = index + tag.size();
         }
-        if( !str.empty() ){
-            T::reverse_iterator it;
-            for( it = str.rbegin(); it != str.rend(); ++it ){
-                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t') || *it == pattern) ){
-                    break;
-                }
-            }
-            T::difference_type dt = str.rend() - it;
-            str.erase( str.begin() + dt, str.end() );
-        }
-        return str;
-    }
 
-    template<class T> static T LeftTrim(T str, TCHAR pattern = _T(' '))
-    {
-        if( !str.empty() ){
-            T::iterator it;
-            for( it = str.begin(); it != str.end(); ++it ){
-                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t') || *it == pattern) ){
-                    break;
-                }
-            }
-            str.erase(str.begin(), it);
+        sub_str = str.substr(search_index);
+        if( bTrim ){
+            sub_str = TrimString(sub_str);
         }
-        return str;
-    }
 
-    template<class T> static T RightTrim(T str, TCHAR pattern = _T(' '))
-    {
-        if( !str.empty() ){
-            T::reverse_iterator it;
-            for( it = str.rbegin(); it != str.rend(); ++it ){
-                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t') || *it == pattern) ){
-                    break;
-                }
-            }
-            T::difference_type dt = str.rend() - it;
-            str.erase( str.begin() + dt, str.end() );
+        if( !sub_str.empty() ){
+            vecStr.push_back(sub_str);
         }
-        return str;
+
+        return vecStr.size();
     }
 
     template<class T> static T UpperCase(T str)
@@ -207,25 +204,26 @@ public:
         return str;
     }
 
-    template<class T> static size_t	SubStrPair(T srcIn, size_t offset, const T first, const T second, T& out, bool self = false)
+    template<class T> static T StringLengthFixed(T str, size_t fixedLength, T strFill, bool bAlignRight = false)
     {
-        size_t index1 = srcIn.find(first, offset);
-        size_t index2 = srcIn.find(second, offset);
-        size_t index1_len = first.size();
-        size_t index2_len = second.size();
-        if( index1 != T::npos && index2 != T::npos ){
-            if( index1 > index2 ){
-                swap(index1, index2);
-                swap(index1_len, index2_len);
-            }
-            if( self ){
-                out = srcIn.substr(index1, index2+index2_len-index1);
-            }else{
-                out = srcIn.substr(index1+index1_len, index2-index1-index1_len);
-            }			
-            return index2+index2_len+1;
+        if( str.size() == fixedLength ){
+            return str;
         }
-        return T::npos;
+
+        if( str.size() > fixedLength ){
+            bAlignRight? str = str.substr(str.size()-fixedLength) :  str = str.substr(0, fixedLength);
+        }else{
+            size_t len_left = fixedLength-str.size();
+            while(len_left >= strFill.size()){
+                bAlignRight? str += strFill : str = strFill + str;
+                len_left -= strFill.size();
+            }
+            if(len_left){
+                bAlignRight? str += strFill.substr(0, len_left) : str = strFill.substr(0, len_left) + str;
+            }
+        }
+
+        return str;
     }
 
     template<class T> static T StringReplaceAll(T strOriginal, T strOldPattern, T strNewPattern)
@@ -259,19 +257,34 @@ public:
         return strOriginal;
     }
 
-    template<class T> static void StringReverse(T& str, size_t start_pos = 0, size_t end_pos = T::npos)
+    template<class T> static T StringReverse(T& str, size_t start_pos = 0, size_t end_pos = T::npos)
     {
-        if(str.length() == 0)
-            return;
+        if(str.length() != 0){
+            if( end_pos == T::npos || end_pos >= str.length() )
+                end_pos = str.length()-1;
 
-        if( end_pos == T::npos || end_pos >= str.length() )
-            end_pos = str.length()-1;
-
-        while( end_pos > start_pos ){
-            swap(str[start_pos], str[end_pos]);
-            start_pos++;
-            end_pos--;
+            while( end_pos > start_pos ){
+                std::swap(str[start_pos], str[end_pos]);
+                start_pos++;
+                end_pos--;
+            }
         }
+
+        return str;
+    }
+
+    template<class T> static unsigned int StringSubPairs(T strIn, const T first, const T second, vector<T>& out, bool self = false)
+    {
+        T tmp;
+        size_t offset = 0;
+        while(true){
+            offset = SubStrPair(strIn, offset, first, second, tmp, self);
+            if(offset == T::npos)
+                break;
+            out.push_back(tmp);
+        }
+
+        return out.size();
     }
 
     template <typename T> static wstring ToWString(T t){
@@ -286,26 +299,29 @@ public:
         return oss.str();
     }
 
-    template <typename T> wstring ToWStringFixedLength(T t, long len, WCHAR filled_char, bool align_right = false){
-        wstring str = ToWString<T>(t);
-        return StringLengthFixed<wstring>(str, len, filled_char, align_right);
-    }
+private:
+        template<class T> static size_t	SubStrPair(T srcIn, size_t offset, const T first, const T second, T& out, bool self = false)
+        {
+            size_t index1 = srcIn.find(first, offset);
+            size_t index2 = srcIn.find(second, offset);
+            size_t index1_len = first.size();
+            size_t index2_len = second.size();
 
-    template <class T> wstring ToWStringHex(T t){
-        wostringstream oss(wostringstream::out);
-        oss.setf ( std::ios::hex, std::ios::basefield );
-        oss.setf ( std::ios::showbase );
-        oss << t;
-        return oss.str();
-    }
+            if( index1 != T::npos && index2 != T::npos ){
+                if( index1 > index2 ){
+                    std::swap(index1, index2);
+                    std::swap(index1_len, index2_len);
+                }
+                if( self ){
+                    out = srcIn.substr(index1, index2+index2_len-index1);
+                }else{
+                    out = srcIn.substr(index1+index1_len, index2-index1-index1_len);
+                }			
+                return index2+index2_len;
+            }
 
-    template <class T> string ToStringHex(T t){
-        ostringstream oss(ostringstream::out);
-        oss.setf ( std::ios::hex, std::ios::basefield );
-        oss.setf ( std::ios::showbase );
-        oss << t;
-        return oss.str();
-    }
+            return T::npos;
+        }
 };
 
 #endif
