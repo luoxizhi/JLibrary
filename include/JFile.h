@@ -19,8 +19,6 @@ using std::wstring;
 using std::vector;
 using std::list;
 
-#define LINEBREAK (L"\r\n")
-
 class JFileUtils
 {
 public:
@@ -37,28 +35,21 @@ public:
     static wstring		ExtractFileName(wstring fileName);
     static wstring		ExtractFileExt(wstring fileName);
     static wstring		ExtractFileNameNoExt(wstring fileName);
-    static wstring		ModifyFileName(wstring fileName, wstring newFileName);
+    static wstring		ModifyFileName(wstring fullFileName, wstring newFileNameNoExt);
     static wstring		GetExeName();
     static wstring		GetFileVersion();
     static wstring		GetFileVersion(wstring fileName);
 
     // file operation
-    static char*    ReadFile(wstring fileName);         // make sure free the memory if return is not NULL
-    static DWORD    WriteFile(wstring fileName, char* buffer, ULONG length);
-    static DWORD	AppendFile(const wstring fileName, char* buffer, ULONG length);
+    static char*        ReadStringFile(wstring fileName);   // make sure free the memory if return is not NULL
+    static DWORD        WriteStringFile(const wstring fileName, wstring& fileContent);
+    static DWORD        AppendStringFile(const wstring fileName, wstring& fileContent);
 
-    static char*    ReadStringFile(wstring fileName);   // make sure free the memory if return is not NULL
-    static DWORD    WriteStringFile(const wstring fileName, wstring& fileContent);
-    static DWORD    AppendStringFile(const wstring fileName, wstring fileContent, wstring suffix = LINEBREAK);
-
-    static void     AppendFile2File(const wstring fileName, wstring contentFileName);
-    static void		CopyFile2File(const wstring srcFileName, const wstring tarFileName);
-    static void		CopyFolder2Folder(wstring srcDirName, wstring tarDirName);
-    static void		CopyFile2Folder(const vector<wstring>& vecFiles, wstring tarDirName);
-    static void		MoveFolder2Folder(wstring srcDirName, wstring tarDirName);
-    static void		MoveFile2Folder(const vector<wstring>& vecFiles, wstring tarDirName);
-    static void		MoveFile2File(const wstring srcFileName, const wstring tarFileName);
-    static void		DelFile(const wstring fileName);
+    static void		    CopyFolder2Folder(wstring srcDirName, wstring tarDirName);
+    static void		    CopyFile2Folder(wstring fileName, wstring tarDirName);
+    static void		    MoveFolder2Folder(wstring srcDirName, wstring tarDirName);
+    static void		    MoveFile2Folder(wstring fileName, wstring tarDirName);
+    static void		    DelFile(const wstring fileName);
 
     // directory operation	
     static void			GetFileNameList(wstring dirName, vector<wstring>& fileList);

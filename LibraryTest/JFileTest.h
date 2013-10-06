@@ -23,6 +23,9 @@ private:
 
     static bool TestDirectorySome();
     static bool TestIsFileExist();
+    static bool TestExtractFilePath();
+    static bool TestFileInfo();
+    static bool TestFileOperation();
 };
 
 #endif

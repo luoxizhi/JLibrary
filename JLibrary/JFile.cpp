@@ -151,18 +151,18 @@ wstring JFileUtils::ExtractFileExt(wstring fileName)
     return pos >= 0? fileName.substr(pos, fileName.length()-pos) : L"";
 }
 
-wstring JFileUtils::ModifyFileName(wstring fileName, wstring newFileName)
+wstring JFileUtils::ModifyFileName(wstring fullFileName, wstring newFileNameNoExt)
 {
-    wstring path = ExtractFilePath(fileName);
-    wstring name = ExtractFileName(fileName);
-    wstring ext = ExtractFileExt(fileName);
+    wstring path = ExtractFilePath(fullFileName);
+    wstring name = ExtractFileName(fullFileName);
+    wstring ext = ExtractFileExt(fullFileName);
     size_t pos = name.find(L'.');
 
     if( pos != wstring::npos ){
         name = name.substr(0, pos);
-        return path + newFileName + ext;
+        return path + newFileNameNoExt + ext;
     }else{
-        return path + newFileName;
+        return path + newFileNameNoExt;
     }				
 }
 
@@ -214,31 +214,14 @@ DWORD JFileUtils::WriteStringFile(const wstring fileName, wstring& fileContent)
 
     DWORD count = 0;
     HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    if( file_handle != INVALID_HANDLE_VALUE ){
-        
+    if( file_handle != INVALID_HANDLE_VALUE ){        
         ::WriteFile(file_handle, fileContent.c_str(), (DWORD)(fileContent.size()*sizeof(WCHAR)), &count, NULL);
         CloseHandle(file_handle);
     }
     return count;
 }
 
-DWORD JFileUtils::WriteFile(wstring fileName, char* buffer, ULONG length)
-{
-    if( IsFileExist(fileName) ){
-        ::DeleteFileW(fileName.c_str());
-    }
-    ForceCreateDirectory(ExtractFilePath(fileName));
-
-    DWORD count = 0;
-    HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    if( file_handle != INVALID_HANDLE_VALUE ){        
-        ::WriteFile(file_handle, buffer, (DWORD)length, &count, NULL);
-        CloseHandle(file_handle);
-    }
-    return count;
-}
-
-DWORD JFileUtils::AppendStringFile(const wstring fileName, wstring fileContent, wstring suffix)
+DWORD JFileUtils::AppendStringFile(const wstring fileName, wstring& fileContent)
 {
     ForceCreateDirectory(ExtractFilePath(fileName));    
     HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
@@ -249,122 +232,74 @@ DWORD JFileUtils::AppendStringFile(const wstring fileName, wstring fileContent, 
     }
 
     DWORD write_count = 0;
-    wstring line = fileContent + suffix;
-    ::WriteFile(file_handle, line.c_str(), (DWORD)(line.size()*sizeof(WCHAR)), &write_count, NULL);
+    ::WriteFile(file_handle, fileContent.c_str(), (DWORD)(fileContent.size()*sizeof(WCHAR)), &write_count, NULL);
     CloseHandle(file_handle);
-
     return write_count;
-}
-
-void JFileUtils::AppendFile2File(const wstring fileName, wstring contentFileName)
-{		
-    HANDLE append_file_handle = ::CreateFileW(contentFileName.c_str(), GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if( append_file_handle != INVALID_HANDLE_VALUE ){
-        ForceCreateDirectory(ExtractFilePath(fileName));
-        HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-        if( file_handle == INVALID_HANDLE_VALUE ){
-            file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-        }else{
-            ::SetFilePointer(file_handle, 0, NULL, FILE_END);
-        }
-        __int64 size = GetFileSize(contentFileName);
-        char* buffer = new char[65535];
-        if( buffer ){
-            DWORD real_read_out, real_write_out;
-            while( size > 0 ){
-                if(::ReadFile(append_file_handle, buffer, 65535, &real_read_out, NULL)
-                    && ::WriteFile(file_handle, buffer, real_read_out, &real_write_out, NULL) )
-                {
-                    size -= real_write_out;
-                }
-                else{
-                    break;
-                }
-            }
-            delete buffer;
-        }
-        ::CloseHandle(append_file_handle);
-        ::CloseHandle(file_handle);
-    }		
-}
-
-DWORD JFileUtils::AppendFile(const wstring fileName, char* buffer, ULONG length)
-{
-    ForceCreateDirectory(ExtractFilePath(fileName));
-    HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if( file_handle == INVALID_HANDLE_VALUE ){
-        file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ|GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-    }else{
-        ::SetFilePointer(file_handle, 0, NULL, FILE_END);
-    }
-
-    DWORD real_write = 0;
-    ::WriteFile(file_handle, buffer, length*sizeof(char), &real_write, NULL);
-    ::CloseHandle(file_handle);
-    return real_write;
 }
 
 void JFileUtils::CopyFolder2Folder(wstring srcDirName, wstring tarDirName)
 {
     vector<wstring> fileList;
+    vector<wstring> folderList;
     GetFileNameList(srcDirName, fileList);
-    CopyFile2Folder(fileList, tarDirName);
-}
+    GetDirNameList(srcDirName, folderList);
 
-void JFileUtils::CopyFile2Folder(const vector<wstring>& vecFiles, wstring tarDirName)
-{
-    if( tarDirName[tarDirName.size()-1] != _T('\\') && tarDirName[tarDirName.size()-1] != _T('/') ){
-        tarDirName += L"\\";
-    }
-    wstring tarFileName;
-    for( vector<wstring>::const_iterator it = vecFiles.begin(); it != vecFiles.end(); ++it ){
-        tarFileName = tarDirName + ExtractFileName(*it);
-        if( IsFileExist(tarFileName) == false ){	
-            ::CopyFile(it->c_str(), tarFileName.c_str(), false);
+    if( !folderList.empty() ){
+        for(size_t i = 0; i < folderList.size(); i++){
+            CopyFolder2Folder(folderList[i], tarDirName);
         }
     }
+
+    if( !fileList.empty() ){
+        for(size_t i = 0; i < fileList.size(); i++){
+            CopyFile2Folder(fileList[i], tarDirName);
+        }        
+    }
 }
 
-void JFileUtils::CopyFile2File(const wstring srcFileName, const wstring tarFileName)
+void JFileUtils::CopyFile2Folder(wstring fileName, wstring tarDirName)
 {
-    if( JStringUtils::TrimString(srcFileName).empty() || JStringUtils::TrimString(tarFileName).empty() ){
-        return;
+    if( tarDirName[tarDirName.size()-1] != L'\\' && tarDirName[tarDirName.size()-1] != L'/' ){
+        tarDirName += L"\\";
     }
-    if( !IsFileExist(srcFileName) ){
-        return;
+    wstring tarFileName = tarDirName + ExtractFileName(fileName);
+    if( IsFileExist(tarFileName) == false ){
+        ::CopyFileW(fileName.c_str(), tarFileName.c_str(), false);
     }
-    ::CopyFileW(srcFileName.c_str(), tarFileName.c_str(), false);
 }
 
 void JFileUtils::MoveFolder2Folder(wstring srcDirName, wstring tarDirName)
 {
     vector<wstring> fileList;
+    vector<wstring> folderList;
     GetFileNameList(srcDirName, fileList);
-    MoveFile2Folder(fileList, tarDirName);
+    GetDirNameList(srcDirName, folderList);
+
+    if( !folderList.empty() ){
+        for(size_t i = 0; i < folderList.size(); i++){
+            MoveFolder2Folder(folderList[i], tarDirName);
+        }
+    }
+
+    if( !fileList.empty() ){
+        for(size_t i = 0; i < fileList.size(); i++){
+            MoveFile2Folder(fileList[i], tarDirName);
+        }        
+    }
 }
 
-void JFileUtils::MoveFile2Folder(const vector<wstring>& vecFiles, wstring tarDirName)
+void JFileUtils::MoveFile2Folder(wstring fileName, wstring tarDirName)
 {
     if( !JStringUtils::TrimString(tarDirName).empty() ){
         if( tarDirName[tarDirName.size()-1] != L'\\' && tarDirName[tarDirName.size()-1] != L'/' ){
             tarDirName += L"\\";
         }
-        wstring tarFileName;
-        for( vector<wstring>::const_iterator it = vecFiles.begin(); it != vecFiles.end(); ++it ){
-            tarFileName = tarDirName + ExtractFileName(*it);
-            if( IsFileExist(tarFileName) == false ){	
-                if( ::CopyFileW(it->c_str(), tarFileName.c_str(), false) ){
-                    DelFile(*it);
-                }
+        wstring tarFileName = tarDirName + ExtractFileName(fileName);
+        if( IsFileExist(tarFileName) == false ){	
+            if( ::CopyFileW(fileName.c_str(), tarFileName.c_str(), false) ){
+                DelFile(fileName);
             }
         }
-    }
-}
-
-void JFileUtils::MoveFile2File(const wstring srcFileName, const wstring tarFileName)
-{
-    if( !JStringUtils::TrimString(srcFileName).empty() && !JStringUtils::TrimString(tarFileName).empty() && IsFileExist(srcFileName) ){
-        ::MoveFileW(srcFileName.c_str(), tarFileName.c_str());
     }
 }
 
@@ -540,21 +475,3 @@ char* JFileUtils::ReadStringFile(wstring fileName)
     return NULL;    
 }
 
-char* JFileUtils::ReadFile(wstring fileName)
-{
-    if( IsFileExist(fileName) ){
-        ULONG size = GetFileSize(fileName);
-        HANDLE file_handle = ::CreateFileW(fileName.c_str(), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-        if( file_handle != INVALID_HANDLE_VALUE ){
-            char* buffer = NULL;
-            DWORD bytes_read;
-            buffer = new char[size];
-            if( buffer ){
-                ::ReadFile(file_handle, buffer, size, &bytes_read, NULL);
-            }
-            CloseHandle(file_handle);
-            return buffer;
-        }
-    }
-    return NULL;    
-}
