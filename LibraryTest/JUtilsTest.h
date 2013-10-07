@@ -13,11 +13,14 @@
 
 class JUtilsTest
 {
-//public:
-//    static bool NormalTest();
-//
-//private:
-//    static bool RunFunction(bool result, string strFunc);
+public:
+    static bool NormalTest();
+
+private:
+    static bool RunFunction(bool result, string strFunc);
+
+    static bool TestJUtilsClass();
+    static bool TestJLogUtilsClass();
 };
 
 #endif

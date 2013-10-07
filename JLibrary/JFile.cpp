@@ -13,15 +13,20 @@
 
 #pragma comment(lib, "Version.lib")
 
-void JFileUtils::ForceCreateDirectory(const wstring path)
+void JFileUtils::ForceCreateDirectory(wstring path)
 {
+    JStringUtils::RightTrim(path, wstring(L"\\"));
+    MakeDirNameValid(path);
+
     wstring parent = ExtractFileDir(path);
     if( parent == path ){
         return;
     }
+
     if( !IsDirExist(parent) ){
         ForceCreateDirectory(parent);
     }
+
     ::CreateDirectoryW(path.c_str(), NULL);
 }
 
@@ -103,8 +108,8 @@ wstring JFileUtils::ExtractFilePath(wstring fileName)
 wstring JFileUtils::ExtractFileDir(wstring fileName)
 {
     wstring new_str;
-    size_t pos1 = fileName.find_last_of(_T("\\"));
-    size_t pos2 = fileName.find_last_of(_T("/"));
+    size_t pos1 = fileName.find_last_of(L"\\");
+    size_t pos2 = fileName.find_last_of(L"/");
 
     if( pos1 != wstring::npos && pos2 != wstring::npos ){
         new_str = pos1 > pos2? fileName.substr(0, pos1) : fileName.substr(0, pos2);
@@ -113,7 +118,7 @@ wstring JFileUtils::ExtractFileDir(wstring fileName)
     }else if( pos2!= wstring::npos ){
         new_str = fileName.substr(0, pos2);
     }else{
-        new_str = _T("");
+        new_str = L"";
     }
     return new_str;
 }
@@ -237,26 +242,6 @@ DWORD JFileUtils::AppendStringFile(const wstring fileName, wstring& fileContent)
     return write_count;
 }
 
-void JFileUtils::CopyFolder2Folder(wstring srcDirName, wstring tarDirName)
-{
-    vector<wstring> fileList;
-    vector<wstring> folderList;
-    GetFileNameList(srcDirName, fileList);
-    GetDirNameList(srcDirName, folderList);
-
-    if( !folderList.empty() ){
-        for(size_t i = 0; i < folderList.size(); i++){
-            CopyFolder2Folder(folderList[i], tarDirName);
-        }
-    }
-
-    if( !fileList.empty() ){
-        for(size_t i = 0; i < fileList.size(); i++){
-            CopyFile2Folder(fileList[i], tarDirName);
-        }        
-    }
-}
-
 void JFileUtils::CopyFile2Folder(wstring fileName, wstring tarDirName)
 {
     if( tarDirName[tarDirName.size()-1] != L'\\' && tarDirName[tarDirName.size()-1] != L'/' ){
@@ -268,32 +253,14 @@ void JFileUtils::CopyFile2Folder(wstring fileName, wstring tarDirName)
     }
 }
 
-void JFileUtils::MoveFolder2Folder(wstring srcDirName, wstring tarDirName)
-{
-    vector<wstring> fileList;
-    vector<wstring> folderList;
-    GetFileNameList(srcDirName, fileList);
-    GetDirNameList(srcDirName, folderList);
-
-    if( !folderList.empty() ){
-        for(size_t i = 0; i < folderList.size(); i++){
-            MoveFolder2Folder(folderList[i], tarDirName);
-        }
-    }
-
-    if( !fileList.empty() ){
-        for(size_t i = 0; i < fileList.size(); i++){
-            MoveFile2Folder(fileList[i], tarDirName);
-        }        
-    }
-}
-
 void JFileUtils::MoveFile2Folder(wstring fileName, wstring tarDirName)
 {
     if( !JStringUtils::TrimString(tarDirName).empty() ){
         if( tarDirName[tarDirName.size()-1] != L'\\' && tarDirName[tarDirName.size()-1] != L'/' ){
             tarDirName += L"\\";
         }
+        ForceCreateDirectory(tarDirName);
+
         wstring tarFileName = tarDirName + ExtractFileName(fileName);
         if( IsFileExist(tarFileName) == false ){	
             if( ::CopyFileW(fileName.c_str(), tarFileName.c_str(), false) ){
@@ -394,7 +361,7 @@ void JFileUtils::DelOutDateFile(wstring dirName, __int64 seconds, bool bSubDir)
     GetFileNameList(dirName, fileList);
     GetDirNameList(dirName, dirList);
     if( fileList.empty() && dirList.empty() ){
-        ::RemoveDirectory(dirName.c_str());
+        ::RemoveDirectoryW(dirName.c_str());
     }
 }
 
@@ -447,7 +414,7 @@ void JFileUtils::DelFile(const wstring fileName)
 wstring JFileUtils::MakeDirNameValid(wstring& dirName)
 {
     set<wstring> invalidSet;
-    WCHAR* invalidChr[] = { L"\\", L"/", L":", L"*", L"?", L"\"", L"<", L">", L"|" };
+    WCHAR* invalidChr[] = { /*L"\\",*/ L"/", L":", L"*", L"?", L"\"", L"<", L">", L"|" };
     for( int i = 0; i < sizeof(invalidChr)/sizeof(invalidChr[0]); i++){
         invalidSet.insert(wstring(invalidChr[i]));
     }

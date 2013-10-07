@@ -41,7 +41,8 @@ bool JFileTest::NormalTest()
                  && RunFunction(TestIsFileExist(), "JFileUtils::IsFileExist+ForceCreateDirectory+DelFile+ModifyFileName")
                  && RunFunction(TestExtractFilePath(), "JFileUtils::ExtractFilePath+ExtractFileDir+ExtractFileExt+ExtractFileName+ExtractFileNameNoExt")
                  && RunFunction(TestFileInfo(), "JFileUtils::GetExeName+GetFileSize+GetFileCreateTime+GetFileAccessTime+GetFileModifyTime+GetFileVersion")
-                 && RunFunction(TestFileOperation(), "JFileUtils::WriteStringFile+ReadStringFile+AppendStringFile");
+                 && RunFunction(TestFileOperation(), "JFileUtils::WriteStringFile+ReadStringFile+AppendStringFile")
+                 && RunFunction(TestFolderOperation(), "JFileUtils::MoveFile2Folder+CopyFile2Folder+MakeDirNameValid");
     cout << "     File JFile.h " << (all_pass? "PASS" : "FAILED") << "\n";
     cout << "---------------------------------------\n";
     return all_pass;
@@ -124,6 +125,37 @@ bool JFileTest::TestFileOperation()
         return false;
 
     JFileUtils::DelFile(wstr);
+
+    return true;
+}
+
+bool JFileTest::TestFolderOperation()
+{
+    wstring wstrFolder = L"c:\\sample";
+    wstring wstrNewFolder = L"c:\\sample two\\";
+    wstring wstrFile = L"c:\\sample\\test\\new.txt";
+    wstring wstrFileNew = L"c:\\sample two\\new.txt";
+
+    JFileUtils::WriteStringFile(wstrFile, wstring(L"hello world"));
+    JFileUtils::MoveFile2Folder(wstrFile, wstrNewFolder);
+    if( JFileUtils::IsFileExist(wstrFileNew) == false || JFileUtils::IsFileExist(wstrFile) == true )
+        return false;
+
+    JFileUtils::CopyFile2Folder(wstrFileNew, wstrFolder+L"\\test");
+    if( JFileUtils::IsFileExist(wstrFileNew) == false || JFileUtils::IsFileExist(wstrFile) == false )
+        return false;
+
+    JFileUtils::DelDir(wstrFolder);
+    JFileUtils::DelDir(wstrNewFolder);
+    if( JFileUtils::IsDirExist(wstrFolder) || JFileUtils::IsDirExist(wstrNewFolder) )
+        return false;
+
+    WCHAR invalidChr[] = { L'/', L':', L'*', L'?', L'"', L'<', L'>', L'|' };
+    wstring invalidFolder = wstring(L"c:\\testinvalidfoldername\\")+invalidChr;
+    JFileUtils::ForceCreateDirectory(invalidFolder);
+    if( JFileUtils::IsDirExist(L"c:\\testinvalidfoldername\\") == false)
+        return false;
+    JFileUtils::DelDir(L"c:\\testinvalidfoldername\\");
 
     return true;
 }

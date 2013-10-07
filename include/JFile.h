@@ -23,7 +23,7 @@ class JFileUtils
 {
 public:
     // file & directory
-    static void		    ForceCreateDirectory(const wstring path); // make sure wstring end with '\\'
+    static void		    ForceCreateDirectory(wstring path);
     static bool			IsFileExist(const wstring fileName);
     static bool			IsDirExist(const wstring dirName);
     static JDateTime	GetFileCreateTime(const wstring fileName);
@@ -45,9 +45,7 @@ public:
     static DWORD        WriteStringFile(const wstring fileName, wstring& fileContent);
     static DWORD        AppendStringFile(const wstring fileName, wstring& fileContent);
 
-    static void		    CopyFolder2Folder(wstring srcDirName, wstring tarDirName);
     static void		    CopyFile2Folder(wstring fileName, wstring tarDirName);
-    static void		    MoveFolder2Folder(wstring srcDirName, wstring tarDirName);
     static void		    MoveFile2Folder(wstring fileName, wstring tarDirName);
     static void		    DelFile(const wstring fileName);
 

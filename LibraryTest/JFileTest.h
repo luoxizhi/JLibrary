@@ -26,6 +26,7 @@ private:
     static bool TestExtractFilePath();
     static bool TestFileInfo();
     static bool TestFileOperation();
+    static bool TestFolderOperation();
 };
 
 #endif

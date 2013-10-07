@@ -112,14 +112,14 @@ __int64 JUtils::ConvertSize(wstring size)
     return ConvertSize(UnicodeToAsciiString(size));
 }
 
-bool JLogUtils::String2LogData(wstring strLine, LogData& data)
+LogData JLogUtils::String2LogData(wstring strLine)
 {
+    LogData data;
 	if( strLine.length() >= JDateTime::DataTimeStringLength ){
 		data.dt = JDateTime(strLine.substr(0, JDateTime::DataTimeStringLength));
-		data.text = strLine.substr(JDateTime::DataTimeStringLength);
-		return true;
+		data.text = JStringUtils::LeftTrim(strLine.substr(JDateTime::DataTimeStringLength));
 	}
-	return false;	
+	return data;	
 }
 
 wstring JLogUtils::LogData2String(LogData data)

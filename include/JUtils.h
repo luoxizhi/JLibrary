@@ -21,10 +21,10 @@ class JUtils
 public:
     static void		WindowsStartUp();
     
-    static __int64  ConvertTime(string time);
-    static __int64  ConvertTime(wstring time);
+    static __int64  ConvertTime(string time);   // only support integer
+    static __int64  ConvertTime(wstring time); 
     
-    static __int64  ConvertSize(string size);
+    static __int64  ConvertSize(string size);   // only support integer
     static __int64  ConvertSize(wstring size);
 
     static wstring	AsciiToUnicodeString(string str);
@@ -40,13 +40,13 @@ class JLogUtils
 {
 public:
     static wstring	LogData2String(LogData data);
-    static bool	    String2LogData(wstring strLine, LogData& data);
+    static LogData	String2LogData(wstring strLine);
 };
 
 class JNumberUtils
 {
 public:
-    template <class T> static T Round(T t, T minValue, T maxValue){
+    template <class T> static T Approximate(T t, T minValue, T maxValue){
         if( t < minValue ){
             t = minValue;
         }
@@ -56,7 +56,6 @@ public:
         return t;
     }
 };
-
 
 #define BlackColor		RGB(0, 0, 0)
 #define PinkColor		RGB(255,192,203)
@@ -73,7 +72,7 @@ public:
 #define DefaultColor	(-1)
 
 // format convert function
-RGBQUAD COLORREF2RGBQUAD(COLORREF color);
-COLORREF ConverseRGB(COLORREF color);
+RGBQUAD     COLORREF2RGBQUAD(COLORREF color);
+COLORREF    ConverseRGB(COLORREF color);
 
 #endif // JUtils_H

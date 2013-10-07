@@ -61,12 +61,12 @@ public:
         return str;
     }
 
-    template<class T> static T TrimString(T str, T pattern = T())
+    template<class T> static T TrimString(T& str, T pattern = T())
     {
         return LeftTrim(RightTrim(str, pattern), pattern);
     }
 
-    template<class T> static T LeftTrim(T str, T pattern = T())
+    template<class T> static T LeftTrim(T& str, T pattern = T())
     {
         if( !str.empty() ){
             T::iterator it;
@@ -88,7 +88,7 @@ public:
         return str;
     }
 
-    template<class T> static T RightTrim(T str, T pattern = T())
+    template<class T> static T RightTrim(T& str, T pattern = T())
     {
         if( !str.empty() ){
             T::reverse_iterator it;
