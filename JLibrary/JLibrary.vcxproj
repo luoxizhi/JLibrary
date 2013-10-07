@@ -71,17 +71,33 @@
     <None Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\CrashDumper.h" />
+    <ClInclude Include="..\include\JCycleMap.h" />
     <ClInclude Include="..\include\JFile.h" />
+    <ClInclude Include="..\include\JFunction.h" />
     <ClInclude Include="..\include\JIniFile.h" />
+    <ClInclude Include="..\include\JLogFile.h" />
+    <ClInclude Include="..\include\JMemStream.h" />
+    <ClInclude Include="..\include\JPing.h" />
+    <ClInclude Include="..\include\JSocket.h" />
     <ClInclude Include="..\include\JString.h" />
+    <ClInclude Include="..\include\JSyncObject.h" />
+    <ClInclude Include="..\include\JThread.h" />
     <ClInclude Include="..\include\JTime.h" />
     <ClInclude Include="..\include\JUtils.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CrashDumper.cpp" />
     <ClCompile Include="JFile.cpp" />
     <ClCompile Include="JIniFile.cpp" />
+    <ClCompile Include="JLogFile.cpp" />
+    <ClCompile Include="JMemStream.cpp" />
+    <ClCompile Include="JPing.cpp" />
+    <ClCompile Include="JSocket.cpp" />
+    <ClCompile Include="JSyncObject.cpp" />
+    <ClCompile Include="JThread.cpp" />
     <ClCompile Include="JTime.cpp" />
     <ClCompile Include="JUtils.cpp" />
     <ClCompile Include="stdafx.cpp">
