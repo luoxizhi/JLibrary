@@ -79,6 +79,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="JFileTest.h" />
+    <ClInclude Include="JIniFileTest.h" />
     <ClInclude Include="JStringTest.h" />
     <ClInclude Include="JTimeTest.h" />
     <ClInclude Include="JUtilsTest.h" />
@@ -87,6 +88,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JFileTest.cpp" />
+    <ClCompile Include="JIniFileTest.cpp" />
     <ClCompile Include="JStringTest.cpp" />
     <ClCompile Include="JTimeTest.cpp" />
     <ClCompile Include="JUtilsTest.cpp" />

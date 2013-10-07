@@ -6,6 +6,7 @@
 #include "JTimeTest.h"
 #include "JFileTest.h"
 #include "JUtilsTest.h"
+#include "JIniFileTest.h"
 #include "windows.h"
 
 int _tmain(int argc, _TCHAR* argv[])
@@ -17,6 +18,8 @@ int _tmain(int argc, _TCHAR* argv[])
     JFileTest::NormalTest();
     Sleep(500);
     JUtilsTest::NormalTest();
+    Sleep(500);
+    JIniFileTest::NormalTest();
 
 	return 0;
 }

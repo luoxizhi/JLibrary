@@ -133,13 +133,13 @@ bool JStringTest::TestTrimString()
     wstring str3 = L"回文国文回";
     string str4 = "\rabc\r\n";
     
-    return JStringUtils::TrimString(str1) == L"abca"
-        && JStringUtils::TrimString(str2) == "abca"
-        && JStringUtils::TrimString(str1, wstring(L"a")) == L"bc"
-        && JStringUtils::TrimString(str2, string("a")) == "bc"
-        && JStringUtils::TrimString(str3, wstring(L"回")) == L"文国文"
-        && JStringUtils::TrimString(str3, wstring(L"文")) == L"回文国文回"
-        && JStringUtils::TrimString(str4) == "abc";
+    return JStringUtils::TrimString(wstring(str1)) == L"abca"
+        && JStringUtils::TrimString(string(str2)) == "abca"
+        && JStringUtils::TrimString(wstring(str1), wstring(L"a")) == L"bc"
+        && JStringUtils::TrimString(string(str2), string("a")) == "bc"
+        && JStringUtils::TrimString(wstring(str3), wstring(L"回")) == L"文国文"
+        && JStringUtils::TrimString(wstring(str3), wstring(L"文")) == L"回文国文回"
+        && JStringUtils::TrimString(string(str4)) == "abc";
 }
 
 bool JStringTest::TestTrimLeft()
@@ -149,14 +149,14 @@ bool JStringTest::TestTrimLeft()
     wstring str3 = L"回文国文回";
     string str4 = "\rabc\r\n";
 
-    return JStringUtils::LeftTrim(str1) == L"abca "
-        && JStringUtils::LeftTrim(str1, wstring(L"ab")) == L"ca "
-        && JStringUtils::LeftTrim(str1, wstring(L"ca")) == L"abca "
-        && JStringUtils::LeftTrim(str2) == "abca "
-        && JStringUtils::LeftTrim(str2, string("b")) == "abca "
-        && JStringUtils::LeftTrim(str3, wstring(L"文")) == L"回文国文回"
-        && JStringUtils::LeftTrim(str3, wstring(L"回")) == L"文国文回"
-        && JStringUtils::LeftTrim(str4) == "abc\r\n";
+    return JStringUtils::LeftTrim(wstring(str1)) == L"abca "
+        && JStringUtils::LeftTrim(wstring(str1), wstring(L"ab")) == L"ca "
+        && JStringUtils::LeftTrim(wstring(str1), wstring(L"ca")) == L"abca "
+        && JStringUtils::LeftTrim(string(str2)) == "abca "
+        && JStringUtils::LeftTrim(string(str2), string("b")) == "abca "
+        && JStringUtils::LeftTrim(wstring(str3), wstring(L"文")) == L"回文国文回"
+        && JStringUtils::LeftTrim(wstring(str3), wstring(L"回")) == L"文国文回"
+        && JStringUtils::LeftTrim(string(str4)) == "abc\r\n";
 }
 
 bool JStringTest::TestTrimRight()
@@ -166,14 +166,14 @@ bool JStringTest::TestTrimRight()
     wstring str3 = L"回文国文回";
     string str4 = "\rabc\r\n";
 
-    return JStringUtils::RightTrim(str1) == L" abca"
-        && JStringUtils::RightTrim(str1, wstring(L"ca")) == L" ab"
-        && JStringUtils::RightTrim(str1, wstring(L"ab")) == L" abca"
-        && JStringUtils::RightTrim(str2) == " abca"
-        && JStringUtils::RightTrim(str2, string("a")) == " abc"
-        && JStringUtils::RightTrim(str3, wstring(L"回")) == L"回文国文"
-        && JStringUtils::RightTrim(str3, wstring(L"国")) == L"回文国文回"
-        && JStringUtils::RightTrim(str4) == "\rabc";
+    return JStringUtils::RightTrim(wstring(str1)) == L" abca"
+        && JStringUtils::RightTrim(wstring(str1), wstring(L"ca")) == L" ab"
+        && JStringUtils::RightTrim(wstring(str1), wstring(L"ab")) == L" abca"
+        && JStringUtils::RightTrim(string(str2)) == " abca"
+        && JStringUtils::RightTrim(string(str2), string("a")) == " abc"
+        && JStringUtils::RightTrim(wstring(str3), wstring(L"回")) == L"回文国文"
+        && JStringUtils::RightTrim(wstring(str3), wstring(L"国")) == L"回文国文回"
+        && JStringUtils::RightTrim(string(str4)) == "\rabc";
 }
 
 bool JStringTest::TestStringSplit_Single()

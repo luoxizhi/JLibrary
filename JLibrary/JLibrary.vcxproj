@@ -72,6 +72,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\include\JFile.h" />
+    <ClInclude Include="..\include\JIniFile.h" />
     <ClInclude Include="..\include\JString.h" />
     <ClInclude Include="..\include\JTime.h" />
     <ClInclude Include="..\include\JUtils.h" />
@@ -80,6 +81,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="JFile.cpp" />
+    <ClCompile Include="JIniFile.cpp" />
     <ClCompile Include="JTime.cpp" />
     <ClCompile Include="JUtils.cpp" />
     <ClCompile Include="stdafx.cpp">

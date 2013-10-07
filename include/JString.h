@@ -66,12 +66,12 @@ public:
         return LeftTrim(RightTrim(str, pattern), pattern);
     }
 
-    template<class T> static T LeftTrim(T& str, T pattern = T())
+    static wstring LeftTrim(wstring& str, wstring pattern = L"")
     {
         if( !str.empty() ){
-            T::iterator it;
+            wstring::iterator it;
             for( it = str.begin(); it != str.end(); ++it ){
-                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t')) ){
+                if( !(*it == L' ' || *it == L'\r' || *it == L'\n' || *it == L'\t') ){
                     break;
                 }
             }
@@ -88,16 +88,61 @@ public:
         return str;
     }
 
-    template<class T> static T RightTrim(T& str, T pattern = T())
+    static string LeftTrim(string& str, string pattern = "")
     {
         if( !str.empty() ){
-            T::reverse_iterator it;
-            for( it = str.rbegin(); it != str.rend(); ++it ){
-                if( !(*it == _T(' ') || *it == _T('\r') || *it == _T('\n') || *it == _T('\t')) ){
+            string::iterator it;
+            for( it = str.begin(); it != str.end(); ++it ){
+                if( !(*it == ' ' || *it == '\r' || *it == '\n' || *it == '\t') ){
                     break;
                 }
             }
-            T::difference_type dt = str.rend() - it;
+            str.erase(str.begin(), it);
+        }
+
+        size_t len = pattern.size();
+        while(len && str.size() >= len){
+            if(str.substr(0, len) == pattern)
+                str = str.substr(len);
+            else
+                break;
+        }
+        return str;
+    }
+
+    static wstring RightTrim(wstring& str, wstring pattern = L"")
+    {
+        if( !str.empty() ){
+            wstring::reverse_iterator it;
+            for( it = str.rbegin(); it != str.rend(); ++it ){
+                if( !(*it == L' ' || *it == L'\r' || *it == L'\n' || *it == L'\t') ){
+                    break;
+                }
+            }
+            wstring::difference_type dt = str.rend() - it;
+            str.erase( str.begin() + dt, str.end() );
+        }
+
+        size_t len = pattern.size();
+        while(len && str.size() >= len){
+            if(str.substr(str.size()-len) == pattern)
+                str = str.substr(0, str.size()-len);
+            else
+                break;
+        }
+        return str;
+    }
+
+    static string RightTrim(string& str, string pattern = "")
+    {
+        if( !str.empty() ){
+            string::reverse_iterator it;
+            for( it = str.rbegin(); it != str.rend(); ++it ){
+                if( !(*it == ' ' || *it == '\r' || *it == '\n' || *it == '\t') ){
+                    break;
+                }
+            }
+            string::difference_type dt = str.rend() - it;
             str.erase( str.begin() + dt, str.end() );
         }
 
